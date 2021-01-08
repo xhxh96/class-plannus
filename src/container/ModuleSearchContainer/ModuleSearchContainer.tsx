@@ -1,71 +1,93 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { Component } from 'react';
 import {
+  Alert,
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Overlay, SearchBar } from 'react-native-elements';
+import { SearchBar } from 'react-native-elements';
+import axios from 'axios';
 
-interface Props {
-  isVisible: boolean;
-  setVisibility: (boolean) => void;
-  moduleData: any[];
-}
+class ModuleSearchContainer extends Component<any, any> {
+  state = {
+    searchText: '',
+    moduleList: [],
+  };
 
-const ModuleSearchContainer: FunctionComponent<Props> = ({
-  isVisible,
-  setVisibility,
-  moduleData,
-}) => {
-  const [searchText, setSearchText] = useState('');
+  async componentDidMount() {
+    await this.getModuleList();
+  }
 
-  const renderItem = (item) => (
-    <TouchableOpacity
-      style={styles.itemContainer}
-      onPress={() => setVisibility(false)}
-    >
-      <Text style={styles.moduleCode}>{item.moduleCode}</Text>
-      <Text style={styles.moduleTitle}>{item.title}</Text>
-    </TouchableOpacity>
-  );
+  getModuleList = async () => {
+    const { route } = this.props;
+    const { academicYear } = route.params;
+    const url = `http://api.nusmods.com/v2/${academicYear}/moduleList.json`;
 
-  const filteredModuleData = () => {
+    axios
+      .get(url)
+      .then(({ data }) => this.setState({ moduleList: data }))
+      .catch((e) => Alert.alert('Error', 'Unable to fetch module'));
+  };
+
+  renderItem = (item) => {
+    const { navigation, route } = this.props;
+    const { academicYear, semester } = route.params;
+
     return (
-      moduleData &&
-      moduleData.filter(
-        (item) =>
-          item.moduleCode.includes(searchText) ||
-          item.title.includes(searchText)
-      )
+      <TouchableOpacity
+        style={styles.itemContainer}
+        onPress={() =>
+          navigation.navigate('ModuleSelect', {
+            moduleCode: item.moduleCode,
+            academicYear,
+            semester,
+          })
+        }
+      >
+        <Text style={styles.moduleCode}>{item.moduleCode}</Text>
+        <Text style={styles.moduleTitle}>{item.title}</Text>
+      </TouchableOpacity>
     );
   };
 
-  return (
-    <Overlay
-      isVisible={isVisible}
-      onBackdropPress={() => setVisibility(false)}
-      overlayStyle={{ height: '80%', width: '80%' }}
-    >
-      <View style={{ flex: 1 }}>
+  render() {
+    const { semester } = this.props.route.params;
+    const { moduleList, searchText } = this.state;
+
+    const filteredModuleData = () => {
+      const modules = moduleList.filter((i) => {
+        return i.semesters.includes(parseInt(semester));
+      });
+
+      return modules.filter(
+        (item) =>
+          item.moduleCode.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.title.toLowerCase().includes(searchText.toLowerCase())
+      );
+    };
+
+    return (
+      <View style={{ flex: 1, backgroundColor: 'white' }}>
         <SearchBar
           placeholder="Search..."
           round
           lightTheme
           containerStyle={{ backgroundColor: 'white' }}
           value={searchText}
-          onChangeText={(value) => setSearchText(value)}
+          onChangeText={(value) => this.setState({ searchText: value })}
         />
         <FlatList
+          style={{ marginHorizontal: 10 }}
           data={filteredModuleData()}
-          renderItem={({ item }) => renderItem(item)}
+          renderItem={({ item }) => this.renderItem(item)}
           keyExtractor={(item) => item.moduleCode}
         />
       </View>
-    </Overlay>
-  );
-};
+    );
+  }
+}
 
 const styles = StyleSheet.create({
   itemContainer: {

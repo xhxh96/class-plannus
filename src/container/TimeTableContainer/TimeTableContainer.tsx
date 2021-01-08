@@ -8,48 +8,22 @@ import {
   View,
 } from 'react-native';
 import TimeTableView, { genTimeBlock } from 'react-native-timetable';
-import axios from 'axios';
 import { BottomSheet, Icon, ListItem } from 'react-native-elements';
 import ay from '../../constant/ay';
-import ModuleSearchContainer from '../ModuleSearchContainer';
 
 export default class TimeTableContainer extends Component<any> {
   state = {
     showYearSelection: false,
-    showModuleSelection: false,
     academicYear: '2020-2021',
-    semester: 1,
-    moduleList: null,
-    selectedModule: [],
+    semester: 2,
   };
-
-  componentDidMount() {
-    this.getModuleList('2020-2021');
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.academicYear !== this.state.academicYear) {
-      this.getModuleList(this.state.academicYear);
-    }
-  }
 
   setAcademicYear = (text) => {
     const token = text.split(' ');
     this.setState({
       showYearSelection: false,
       academicYear: token[0],
-      semester: token[1],
-    });
-  };
-
-  getModuleList = (academicYear) => {
-    const url = `https://api.nusmods.com/v2/${academicYear}/moduleList.json`;
-
-    axios.get(url).then(({ data }) => {
-      const availableModules = data.filter((item) =>
-        item.semesters.includes(this.state.semester)
-      );
-      this.setState({ moduleList: availableModules });
+      semester: token[1][1],
     });
   };
 
@@ -114,22 +88,15 @@ export default class TimeTableContainer extends Component<any> {
         location: 'Activity Center',
       },
     ];
-    const {
-      showYearSelection,
-      showModuleSelection,
-      academicYear,
-      semester,
-      moduleList,
-    } = this.state;
+    const { showYearSelection, academicYear, semester } = this.state;
+
+    const { navigation } = this.props;
 
     return (
       <View style={{ flex: 1 }}>
         <SafeAreaView style={styles.container}>
           <View style={styles.headerContainer}>
-            <Icon
-              name="menu"
-              onPress={() => this.props.navigation.openDrawer()}
-            />
+            <Icon name="menu" onPress={() => navigation.openDrawer()} />
             <TouchableOpacity
               onPress={() => this.setState({ showYearSelection: true })}
             >
@@ -139,7 +106,9 @@ export default class TimeTableContainer extends Component<any> {
             </TouchableOpacity>
             <Icon
               name="add"
-              onPress={() => this.setState({ showModuleSelection: true })}
+              onPress={() =>
+                navigation.navigate('ModuleSearch', { academicYear, semester })
+              }
             />
           </View>
           <TimeTableView
@@ -151,13 +120,6 @@ export default class TimeTableContainer extends Component<any> {
             onEventPress={this.onEventPress}
             headerStyle={styles.headerStyle}
             formatDateHeader="dddd"
-          />
-          <ModuleSearchContainer
-            isVisible={showModuleSelection}
-            setVisibility={(visibility) =>
-              this.setState({ showModuleSelection: visibility })
-            }
-            moduleData={moduleList}
           />
         </SafeAreaView>
         <BottomSheet isVisible={showYearSelection} modalProps={null}>
