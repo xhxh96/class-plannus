@@ -1,6 +1,6 @@
 const route = {
-  home: "HOME",
-  config: "CONFIG",
+  home: 'Home',
+  timetable: 'Time Table',
 };
 
 export default route;
