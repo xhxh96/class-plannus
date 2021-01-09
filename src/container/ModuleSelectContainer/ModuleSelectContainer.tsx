@@ -5,7 +5,6 @@ import {
   Text,
   Alert,
   StyleSheet,
-  TouchableOpacity,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
@@ -13,11 +12,16 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { groupBy } from 'lodash';
 import { Picker } from '@react-native-picker/picker';
 import { Button } from 'react-native-elements';
+import { setClasses } from '../../action/setClasses';
+import { connect } from 'react-redux';
+import { genTimeBlock } from 'react-native-timetable';
 
-export default class ModuleSelectContainer extends Component<
-  StackScreenProps<any>,
-  any
-> {
+interface Props extends StackScreenProps<any> {
+  classes: any[];
+  setClasses: ([]) => void;
+}
+
+class ModuleSelectContainer extends Component<Props, any> {
   state = {
     code: '',
     title: '',
@@ -58,8 +62,6 @@ export default class ModuleSelectContainer extends Component<
     const { selectedOptions } = this.state;
     const classKeys = Object.keys(classes);
 
-    console.log(classes);
-
     return (
       <View>
         <Picker
@@ -70,6 +72,7 @@ export default class ModuleSelectContainer extends Component<
             })
           }
         >
+          <Picker.Item value={null} label="Select" />
           {classKeys.map((key) => {
             let classInfo = classes[key][0].classNo;
             classes[key].forEach(
@@ -91,6 +94,7 @@ export default class ModuleSelectContainer extends Component<
 
   renderClassSelection = () => {
     const { code, title, description, timetable } = this.state;
+    const { classes, setClasses, navigation } = this.props;
     const lessonType = new Set(timetable.map((i) => i.lessonType));
     const lessonData = {};
 
@@ -115,7 +119,39 @@ export default class ModuleSelectContainer extends Component<
               {this.renderClassOption(lessonData[type], type)}
             </View>
           ))}
-          <Button title="Confirm" />
+          <Button
+            title="Confirm"
+            onPress={() => {
+              const lessonTypeArray = Array.from(lessonType);
+              const selectedClasses = [];
+              lessonTypeArray.forEach((i) => {
+                const selectedKey = this.state.selectedOptions[i];
+                const classInfo = lessonData[i][selectedKey];
+                classInfo.forEach((slot) =>
+                  selectedClasses.push({
+                    title,
+                    startTime: genTimeBlock(
+                      slot.day.substr(0, 3).toUpperCase(),
+                      slot.startTime.substr(0, 2),
+                      slot.startTime.substr(2, 2)
+                    ),
+                    endTime: genTimeBlock(
+                      slot.day.substr(0, 3).toUpperCase(),
+                      slot.endTime.substr(0, 2),
+                      slot.endTime.substr(2, 2)
+                    ),
+                    location: slot.venue,
+                    extra_descriptions: [slot.lessonType],
+                  })
+                );
+              });
+              const existingClasses = classes;
+              selectedClasses.forEach((i) => existingClasses.push(i));
+              console.log(existingClasses);
+              setClasses(existingClasses);
+              navigation.goBack();
+            }}
+          />
         </SafeAreaView>
       </ScrollView>
     );
@@ -125,6 +161,19 @@ export default class ModuleSelectContainer extends Component<
     return <View style={styles.container}>{this.renderClassSelection()}</View>;
   }
 }
+
+const mapStateToProps = (state) => ({
+  classes: state.classes,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  setClasses: (classes) => dispatch(setClasses(classes)),
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ModuleSelectContainer);
 
 const styles = StyleSheet.create({
   container: {

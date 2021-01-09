@@ -10,13 +10,24 @@ import {
 import TimeTableView, { genTimeBlock } from 'react-native-timetable';
 import { BottomSheet, Icon, ListItem } from 'react-native-elements';
 import ay from '../../constant/ay';
+import { connect } from 'react-redux';
 
-export default class TimeTableContainer extends Component<any> {
+class TimeTableContainer extends Component<any> {
   state = {
     showYearSelection: false,
     academicYear: '2020-2021',
     semester: 2,
   };
+
+  componentDidUpdate(
+    prevProps: Readonly<any>,
+    prevState: Readonly<{}>,
+    snapshot?: any
+  ) {
+    if (prevProps.classes !== this.props.classes) {
+      this.forceUpdate();
+    }
+  }
 
   setAcademicYear = (text) => {
     const token = text.split(' ');
@@ -90,7 +101,7 @@ export default class TimeTableContainer extends Component<any> {
     ];
     const { showYearSelection, academicYear, semester } = this.state;
 
-    const { navigation } = this.props;
+    const { navigation, classes } = this.props;
 
     return (
       <View style={{ flex: 1 }}>
@@ -112,7 +123,7 @@ export default class TimeTableContainer extends Component<any> {
             />
           </View>
           <TimeTableView
-            events={events_data}
+            events={classes}
             pivotTime={9}
             pivotEndTime={20}
             pivotDate={genTimeBlock('mon')}
@@ -135,6 +146,12 @@ export default class TimeTableContainer extends Component<any> {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  classes: state.classes,
+});
+
+export default connect(mapStateToProps)(TimeTableContainer);
 
 const styles = StyleSheet.create({
   headerStyle: {

@@ -50,9 +50,12 @@ export default class HomeContainer extends Component<any, any> {
             <View key={section} style={{ marginBottom: 30 }}>
               <Text style={styles.sectionText}>{section}</Text>
               {modules.map((i) => (
-                <ListItem key={i} bottomDivider>
+                <ListItem key={i.code} bottomDivider>
                   <ListItem.Content>
-                    <ListItem.Title>{i}</ListItem.Title>
+                    <ListItem.Title>{i.code}</ListItem.Title>
+                    <ListItem.Subtitle>
+                      {i.completed ? '✔' : '❌'}
+                    </ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>
               ))}
