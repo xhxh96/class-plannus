@@ -1,8 +1,18 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { groupBy } from 'lodash';
+import { Picker } from '@react-native-picker/picker';
+import { Button } from 'react-native-elements';
 
 export default class ModuleSelectContainer extends Component<
   StackScreenProps<any>,
@@ -13,6 +23,7 @@ export default class ModuleSelectContainer extends Component<
     title: '',
     description: '',
     timetable: [],
+    selectedOptions: {},
   };
 
   componentDidMount() {
@@ -43,21 +54,37 @@ export default class ModuleSelectContainer extends Component<
       .catch((e) => Alert.alert('Error', 'Unable to fetch module info'));
   };
 
-  renderClassOption = (classes) => {
+  renderClassOption = (classes, type) => {
+    const { selectedOptions } = this.state;
     const classKeys = Object.keys(classes);
 
     console.log(classes);
 
     return (
       <View>
-        {classKeys.map((key) => {
-          let classInfo = classes[key][0].classNo;
-          classes[key].forEach(
-            (i) => (classInfo += ` ${i.day}: ${i.startTime} - ${i.endTime}`)
-          );
+        <Picker
+          selectedValue={selectedOptions[type]}
+          onValueChange={(value) =>
+            this.setState({
+              selectedOptions: { ...this.state.selectedOptions, [type]: value },
+            })
+          }
+        >
+          {classKeys.map((key) => {
+            let classInfo = classes[key][0].classNo;
+            classes[key].forEach(
+              (i) => (classInfo += ` ${i.day}: ${i.startTime} - ${i.endTime}`)
+            );
 
-          return <Text key={classes[key][0].classNo}>{classInfo}</Text>;
-        })}
+            return (
+              <Picker.Item
+                key={classes[key][0].classNo}
+                value={classes[key][0].classNo}
+                label={classInfo}
+              />
+            );
+          })}
+        </Picker>
       </View>
     );
   };
@@ -73,21 +100,24 @@ export default class ModuleSelectContainer extends Component<
     });
 
     return (
-      <View
+      <ScrollView
         style={{ flex: 1, flexDirection: 'column', backgroundColor: 'white' }}
       >
-        <View style={{ marginBottom: 20 }}>
-          <Text style={{ fontSize: 24 }}>{code}</Text>
-          <Text style={{ fontSize: 18 }}>{title}</Text>
-          <Text style={{ fontSize: 16 }}>{description}</Text>
-        </View>
-        {Array.from(lessonType).map((type) => (
-          <View key={type} style={{ paddingVertical: 10 }}>
-            <Text style={{ fontSize: 16 }}>{type}</Text>
-            {this.renderClassOption(lessonData[type])}
+        <SafeAreaView>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 24 }}>{code}</Text>
+            <Text style={{ fontSize: 18 }}>{title}</Text>
+            <Text style={{ fontSize: 16 }}>{description}</Text>
           </View>
-        ))}
-      </View>
+          {Array.from(lessonType).map((type) => (
+            <View key={type} style={{ paddingVertical: 10 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{type}</Text>
+              {this.renderClassOption(lessonData[type], type)}
+            </View>
+          ))}
+          <Button title="Confirm" />
+        </SafeAreaView>
+      </ScrollView>
     );
   };
 
@@ -100,5 +130,9 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 5,
     flex: 1,
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: 'green',
   },
 });

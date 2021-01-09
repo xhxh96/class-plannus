@@ -8,7 +8,11 @@ const Stack = createStackNavigator();
 
 const TimeTableNavigator = () => (
   <Stack.Navigator initialRouteName="Timetable">
-    <Stack.Screen name="Timetable" component={TimeTableContainer} />
+    <Stack.Screen
+      name="Timetable"
+      component={TimeTableContainer}
+      options={{ headerShown: false }}
+    />
     <Stack.Screen name="ModuleSearch" component={ModuleSearchContainer} />
     <Stack.Screen name="ModuleSelect" component={ModuleSelectContainer} />
   </Stack.Navigator>

@@ -1,0 +1,36 @@
+export const ceg = [
+  {
+    section: 'Program Requirement',
+    modules: [
+      'CG1111',
+      'CG1112',
+      'CS1010',
+      'CS1231',
+      'MA1511',
+      'MA1512',
+      'MA1508E',
+      'CG2023',
+      'CG2027',
+      'CG2028',
+      'CG2271',
+      'CS2040C',
+      'CS2101',
+      'CS2113T',
+      'EE2026',
+      'EG2401A',
+      'ST2334',
+      'CG3207/CS3230',
+      'CP3880/EG3611A',
+      'CG4002',
+      'EE4204',
+    ],
+  },
+  {
+    section: 'General Education',
+    modules: ['GEQ1000', 'GER1000', 'GET1XXX', 'GEH1XXX', 'GES1XXX'],
+  },
+  {
+    section: 'Unrestricted Electives',
+    modules: ['UEM1', 'UEM2', 'UEM3', 'UEM4', 'UEM5', 'UEM6', 'UEM7', 'UEM8'],
+  },
+];

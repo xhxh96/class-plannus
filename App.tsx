@@ -9,7 +9,7 @@ const Drawer = createDrawerNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Time Table">
+      <Drawer.Navigator initialRouteName="Home">
         <Drawer.Screen name="Home" component={HomeContainer} />
         <Drawer.Screen name="Time Table" component={TimeTableNavigator} />
       </Drawer.Navigator>
